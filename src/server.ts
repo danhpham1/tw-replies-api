@@ -326,7 +326,7 @@ app.post('/api/checkvar', async (req, res) => {
 async function start() {
   await init();
 
-  app.listen(PORT, () => {
+  app.listen(3333, () => {
     // eslint-disable-next-line no-console
     console.log(`Server listening on http://0.0.0.0:3333`);
   });
