@@ -45,5 +45,10 @@
 
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "paths": {
+      "crypto": [
+        "./node_modules/crypto-js"
+      ]
+    }
   }
 }
