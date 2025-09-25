@@ -1,0 +1,5 @@
+/.env
+node_modules
+dist
+resp-0.json
+resp-another.json
