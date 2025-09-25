@@ -1,3 +1,4 @@
+import './polyfills/crypto';
 import { TwitterOpenApiClient } from 'twitter-openapi-typescript';
 import * as fs from 'fs';
 

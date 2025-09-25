@@ -1,3 +1,4 @@
+import './polyfills/crypto';
 import { TwitterOpenApi, TwitterOpenApiClient } from 'twitter-openapi-typescript';
 import * as dotenv from 'dotenv';
 import { Account } from './accounts';
