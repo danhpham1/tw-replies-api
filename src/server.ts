@@ -111,7 +111,6 @@ app.post('/fetch-replies', async (req, res) => {
         const client = await getClientForAccount(nextAcc);
         try {
           const result = await fetchReplyUsernamesForUrl(url, client);
-          console.log(result);
           const mongoRes: any = await Reply.updateOne(
             { url: result.url },
             { $addToSet: { usernames: { $each: result.usernames } } },
@@ -168,9 +167,9 @@ app.get('/accounts/:id', async (req, res) => {
 
 app.post('/accounts', async (req, res) => {
   try {
-    const { id, auth_token, ct0, enabled } = req.body || {};
-    if (!id || !auth_token || !ct0) return res.status(400).json({ error: 'id, auth_token, ct0 required' });
-    const created = await createAccount({ id, auth_token, ct0, enabled });
+    const { auth_token, ct0, enabled } = req.body || {};
+    if (!auth_token || !ct0) return res.status(400).json({ error: 'auth_token, ct0 required' });
+    const created = await createAccount({ auth_token, ct0, enabled });
     res.status(201).json({ id: created.id, enabled: created.enabled !== false });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || 'Failed to create account' });
@@ -214,20 +213,19 @@ app.post('/accounts/bulk', async (req, res) => {
   let created = 0;
 
   for (const raw of items) {
-    const id = raw?.id;
     const auth_token = raw?.auth_token;
     const ct0 = raw?.ct0;
     const enabled = raw?.enabled;
-    if (!id || !auth_token || !ct0) {
-      results.push({ id, ok: false, error: 'id, auth_token, ct0 required' });
+    if (!auth_token || !ct0) {
+      results.push({ ok: false, error: 'auth_token, ct0 required' });
       continue;
     }
     try {
-      const createdAcc = await createAccount({ id, auth_token, ct0, enabled });
-      results.push({ id: createdAcc.id, ok: true });
+      const createdAcc = await createAccount({ auth_token, ct0, enabled });
+      results.push({ ok: true });
       created += 1;
     } catch (e: any) {
-      results.push({ id, ok: false, error: e?.message || 'Failed to create' });
+      results.push({ ok: false, error: e?.message || 'Failed to create' });
     }
   }
 

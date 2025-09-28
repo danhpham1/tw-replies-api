@@ -52,6 +52,10 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
     
     const resp = await tweetApi.getTweetDetail(params);
 
+    if (!resp?.raw?.response?.ok) {
+      throw new Error(resp?.raw?.response?.statusText || 'Failed to fetch tweet detail');
+    }
+
     // Collect usernames from tweets
     for (const item of resp.data.data) {
       const screenName = item.user?.legacy?.screenName;

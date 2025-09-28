@@ -51,9 +51,8 @@ export function resetRoundRobin(): void {
   roundRobinIndex = 0;
 }
 
-export async function createAccount(newAccount: { id: string; auth_token: string; ct0: string; enabled?: boolean }): Promise<Account> {
+export async function createAccount(newAccount: { auth_token: string; ct0: string; enabled?: boolean }): Promise<Account> {
   const doc = await AccountModel.create({
-    id: String(newAccount.id).trim(),
     auth_token: String(newAccount.auth_token).trim(),
     ct0: String(newAccount.ct0).trim(),
     enabled: newAccount.enabled === false ? false : true,
