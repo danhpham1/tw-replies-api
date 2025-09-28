@@ -106,11 +106,17 @@ app.post('/fetch-replies', async (req, res) => {
       let attempts = 0;
       let success = false;
       let lastErr: any = null;
-      while (attempts < activeAccounts.length && !success) {
+      while (attempts < activeAccounts.length * 2 && !success) {
         const nextAcc = await getNextActiveAccount();
         const client = await getClientForAccount(nextAcc);
         try {
           const result = await fetchReplyUsernamesForUrl(url, client);
+          // check data is not empty retry
+          if (result.usernames.length === 0) {
+            attempts += 1;
+            await sleep(3000);
+            continue;
+          }
           const mongoRes: any = await Reply.updateOne(
             { url: result.url },
             { $addToSet: { usernames: { $each: result.usernames } } },
