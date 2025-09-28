@@ -42,7 +42,7 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
 
   do {
     // Random delay 10s to mitigate rate limits/bans
-    await sleep(15000);
+    await sleep(7000);
 
     const params: any = {
       focalTweetId: tweetId,
