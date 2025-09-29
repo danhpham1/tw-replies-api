@@ -114,7 +114,7 @@ app.post('/fetch-replies', async (req, res) => {
           // check data is not empty retry
           if (result.usernames.length === 0) {
             attempts += 1;
-            await sleep(3000);
+            await sleep(20000);
             continue;
           }
           const mongoRes: any = await Reply.updateOne(
@@ -129,7 +129,7 @@ app.post('/fetch-replies', async (req, res) => {
           lastErr = e;
           attempts += 1;
           console.log(e);
-          await sleep(3000);
+          await sleep(30000);
           continue; // rotate to next account
         }
       }
