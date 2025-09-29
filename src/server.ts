@@ -315,11 +315,19 @@ app.post('/api/checkvar', async (req, res) => {
 
       if (body.length) {
         await axios.post(`${CHECKVAR_BASE_URL}/send-checkvar`, body, { headers: CHECKVAR_HEADERS });
+
+        // Clear replies
+        await Reply.deleteMany({ url: { $in: urls } });
+
         return res.status(200).json(body);
       }
     }
 
     await axios.post(`${CHECKVAR_BASE_URL}/send-all-done`, body, { headers: CHECKVAR_HEADERS });
+
+    // Clear replies
+    await Reply.deleteMany({ url: { $in: urls } });
+
     return res.status(200).json({ message: 'Checkvar data sent successfully' });
   } catch (error: any) {
     // eslint-disable-next-line no-console
