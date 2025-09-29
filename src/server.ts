@@ -134,6 +134,7 @@ app.post('/fetch-replies', async (req, res) => {
             continue; // rotate to next account
           } else {
             failed.push({ url, reason: e?.message || 'Failed to fetch replies' });
+            break;
           }
         }
       }
