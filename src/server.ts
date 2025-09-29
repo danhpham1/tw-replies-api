@@ -106,7 +106,7 @@ app.post('/fetch-replies', async (req, res) => {
       let attempts = 0;
       let success = false;
       let lastErr: any = null;
-      while (attempts < activeAccounts.length * 2 && !success) {
+      while (attempts < activeAccounts.length && !success) {
         const nextAcc = await getNextActiveAccount();
         const client = await getClientForAccount(nextAcc);
         try {
@@ -114,7 +114,7 @@ app.post('/fetch-replies', async (req, res) => {
           // check data is not empty retry
           if (result.usernames.length === 0) {
             attempts += 1;
-            await sleep(20000);
+            await sleep(10000);
             continue;
           }
           const mongoRes: any = await Reply.updateOne(
@@ -129,7 +129,7 @@ app.post('/fetch-replies', async (req, res) => {
           lastErr = e;
           attempts += 1;
           console.log(e);
-          await sleep(30000);
+          await sleep(10000);
           continue; // rotate to next account
         }
       }
