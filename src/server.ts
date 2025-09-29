@@ -126,11 +126,15 @@ app.post('/fetch-replies', async (req, res) => {
           if (mongoRes.modifiedCount > 0) modified += 1;
           success = true;
         } catch (e: any) {
-          lastErr = e;
-          attempts += 1;
-          console.log(e);
-          await sleep(10000);
-          continue; // rotate to next account
+          if (isRateLimitError(e)) {
+            lastErr = e;
+            attempts += 1;
+            console.log(e);
+            await sleep(10000);
+            continue; // rotate to next account
+          } else {
+            failed.push({ url, reason: e?.message || 'Failed to fetch replies' });
+          }
         }
       }
       if (!success) {
