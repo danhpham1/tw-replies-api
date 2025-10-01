@@ -1,7 +1,7 @@
 import './polyfills/crypto';
 import express from 'express';
 import bodyParser from 'body-parser';
-import { fetchReplyUsernamesForUrl } from './twitter';
+import { fetchReplyUsernamesForUrl, likeXPost } from './twitter';
 import { getClientForAccount, invalidateClient } from './login';
 import { getNextActiveAccount, listAccounts, createAccount, updateAccount, deleteAccount, getAccountById } from './accounts';
 import { connectMongo } from './db';
@@ -104,9 +104,10 @@ app.post('/fetch-replies', async (req, res) => {
 
     for (const url of body.urls) {
       let attempts = 0;
+      let attemptError = 0;
       let success = false;
       let lastErr: any = null;
-      while (attempts < activeAccounts.length && !success) {
+      while ((attempts < activeAccounts.length || attemptError < 3) && !success) {
         const nextAcc = await getNextActiveAccount();
         const client = await getClientForAccount(nextAcc);
         try {
@@ -133,8 +134,13 @@ app.post('/fetch-replies', async (req, res) => {
             await sleep(10000);
             continue; // rotate to next account
           } else {
-            failed.push({ url, reason: e?.message || 'Failed to fetch replies' });
-            break;
+            attemptError += 1;
+            await sleep(10000);
+            if (attemptError >= 3) {
+              failed.push({ url, reason: e?.message || 'Failed to fetch replies' });
+              break;
+            }
+            continue;
           }
         }
       }
@@ -340,6 +346,29 @@ app.post('/api/checkvar', async (req, res) => {
     return res.status(500).json({ error: error?.message || 'Internal Server Error' });
   }
 });
+
+app.post('/api/like-post', async (req, res) => {
+  try {
+    const { tweetId } = req.body || {};
+    if (!tweetId) {
+      return res.status(400).json({ error: 'tweetId is required' });
+    }
+
+    const activeAccounts = (await listAccounts()).filter((a) => a.enabled !== false);
+    if (!activeAccounts || activeAccounts?.length === 0) {
+      return res.status(400).json({ error: 'No active accounts available' });
+    }
+
+    const nextAcc = await getNextActiveAccount();
+    const client = await getClientForAccount(nextAcc);
+    await likeXPost(tweetId, client);
+
+    return res.status(200).json({ message: 'Post liked successfully' });
+  }
+   catch (error: any) {
+    return res.status(500).json({ error: error?.message || 'Internal Server Error' });
+  }
+})
 
 async function start() {
   await init();

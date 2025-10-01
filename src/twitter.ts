@@ -42,7 +42,7 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
 
   do {
     // Random delay 10s to mitigate rate limits/bans
-    await sleep(4000);
+    await sleep(5000);
 
     const params: any = {
       focalTweetId: tweetId,
@@ -80,4 +80,11 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
   return { url, usernames: Array.from(usernamesSet) };
 }
 
+export async function likeXPost(tweetId: string, client: TwitterOpenApiClient) {
+  const tweetApi = client.getPostApi();
+
+  await tweetApi.postFavoriteTweet({
+    tweetId
+  });
+}
 
