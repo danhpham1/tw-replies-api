@@ -9,6 +9,7 @@ import { Reply } from './models/reply';
 import { TwitterOpenApiClient } from 'twitter-openapi-typescript';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import * as xlsx from 'xlsx';
 
 dotenv.config();
 
@@ -366,6 +367,53 @@ app.post('/api/like-post', async (req, res) => {
     return res.status(200).json({ message: 'Post liked successfully' });
   }
    catch (error: any) {
+    return res.status(500).json({ error: error?.message || 'Internal Server Error' });
+  }
+})
+
+app.post('/api/export-checkvar', async (req, res) => {
+  try {
+    const { urls } = req.body || {};
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: 'urls array is required' });
+    }
+
+    const replies = await Reply.find({ url: { $in: urls } });
+    
+    const body: { link: string; usernames: string }[] = [];
+
+    if (replies && replies?.length) {
+      const owners = replies
+        .map((reply) => getOwnerFromXUrl(reply.url)?.toLowerCase())
+        .filter(Boolean) as string[];
+
+      for (const reply of replies) {
+        const owner = getOwnerFromXUrl(reply.url)?.toLowerCase();
+        const lowerUsernames = (reply?.usernames || []).map((u) => u.toLowerCase());
+        const usersNotReply = owners?.filter((user) => !lowerUsernames.includes(user) && user !== owner);
+        if (usersNotReply?.length) {
+          body.push({
+            link: reply.url,
+            usernames: usersNotReply?.join(','),
+          });
+        }
+      }
+
+      if (body.length) {
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.json_to_sheet(body);
+        xlsx.utils.book_append_sheet(workbook, worksheet, 'Checkvar');
+        const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+        // Clear replies
+        await Reply.deleteMany({ url: { $in: urls } });
+
+        return res.status(200).set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(buffer);
+      }
+    }
+
+    return res.status(200).json({ message: 'No data to export' });
+  } catch (error: any) {
     return res.status(500).json({ error: error?.message || 'Internal Server Error' });
   }
 })
