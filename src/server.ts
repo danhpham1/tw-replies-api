@@ -116,7 +116,7 @@ app.post('/fetch-replies', async (req, res) => {
           // check data is not empty retry
           if (result.usernames.length === 0) {
             attempts += 1;
-            await sleep(10000);
+            await sleep(3000);
             continue;
           }
           const mongoRes: any = await Reply.updateOne(
@@ -132,7 +132,7 @@ app.post('/fetch-replies', async (req, res) => {
             lastErr = e;
             attempts += 1;
             console.log(e);
-            await sleep(10000);
+            await sleep(3000);
             continue; // rotate to next account
           } else {
             attemptError += 1;
@@ -404,9 +404,6 @@ app.post('/api/export-checkvar', async (req, res) => {
         const worksheet = xlsx.utils.json_to_sheet(body);
         xlsx.utils.book_append_sheet(workbook, worksheet, 'Checkvar');
         const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
-        // Clear replies
-        await Reply.deleteMany({ url: { $in: urls } });
 
         return res.status(200).set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(buffer);
       }
