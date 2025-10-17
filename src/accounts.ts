@@ -60,11 +60,12 @@ export async function createAccount(newAccount: { auth_token: string; ct0: strin
   return toAccount(doc);
 }
 
-export async function updateAccount(accountId: string, patch: { auth_token?: string; ct0?: string; enabled?: boolean }): Promise<Account> {
+export async function updateAccount(accountId: string, patch: { auth_token?: string; ct0?: string; enabled?: boolean; error?: string }): Promise<Account> {
   const update: any = {};
   if (patch.auth_token !== undefined) update.auth_token = String(patch.auth_token).trim();
   if (patch.ct0 !== undefined) update.ct0 = String(patch.ct0).trim();
   if (patch.enabled !== undefined) update.enabled = Boolean(patch.enabled);
+  if (patch.error !== undefined) update.error = String(patch.error).trim();
   const doc = await AccountModel.findOneAndUpdate({ id: accountId }, { $set: update }, { new: true });
   if (!doc) throw new Error(`Account not found: ${accountId}`);
   return toAccount(doc);

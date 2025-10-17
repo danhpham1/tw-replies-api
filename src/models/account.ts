@@ -7,6 +7,7 @@ export interface IAccount extends Document {
   enabled: boolean;
   createdAt: Date;
   updatedAt: Date;
+  error: string;
 }
 
 const AccountSchema = new Schema<IAccount>(
@@ -15,6 +16,7 @@ const AccountSchema = new Schema<IAccount>(
     auth_token: { type: String, required: true },
     ct0: { type: String, required: true },
     enabled: { type: Boolean, required: true, default: true },
+    error: { type: String, required: true, default: '' },
   },
   { timestamps: true }
 );

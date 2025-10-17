@@ -138,6 +138,7 @@ app.post('/fetch-replies', async (req, res) => {
             attemptError += 1;
             await sleep(10000);
             if (attemptError >= 3) {
+              await updateAccount(nextAcc.id, { error: e?.message || 'Failed to fetch replies' });
               failed.push({ url, reason: e?.message || 'Failed to fetch replies' });
               break;
             }
