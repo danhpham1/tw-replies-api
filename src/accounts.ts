@@ -22,7 +22,7 @@ function toAccount(doc: IAccount): Account {
 }
 
 async function loadAccountsFromDb(): Promise<Account[]> {
-  const docs = await AccountModel.find({}).lean();
+  const docs = await AccountModel.find({}).sort({ createdAt: -1 }).lean();
   return docs.map((d: any) => toAccount(d as IAccount));
 }
 
