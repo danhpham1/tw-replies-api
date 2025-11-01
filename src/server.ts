@@ -117,7 +117,8 @@ app.post('/fetch-replies', async (req, res) => {
           if (result.usernames.length === 0) {
             attempts += 1;
             await sleep(5000);
-            continue;
+            failed.push({ url, reason: 'Empty replies found, please check the tweet again' });
+            break;
           }
           const mongoRes: any = await Reply.updateOne(
             { url: result.url },
