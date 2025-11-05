@@ -64,7 +64,7 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
       }
     }
 
-    console.log(resp?.data?.data);
+    console.log(`${url} - ${resp?.data?.data?.length}`);
 
     page += 1;
 
