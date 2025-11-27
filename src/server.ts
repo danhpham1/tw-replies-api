@@ -415,6 +415,22 @@ app.post('/api/export-checkvar', async (req, res) => {
   }
 })
 
+app.post('/api/replies', async (req, res) => {
+  try {
+    const { urls } = req.body || {};
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: 'urls array is required' });
+    }
+
+    const replies = await Reply.find({ url: { $in: urls } });
+
+    return res.status(200).json(replies);
+  }
+  catch (error: any) {
+    return res.status(500).json({ error: error?.message || 'Internal Server Error' });
+  }
+})
+
 async function start() {
   await init();
 
