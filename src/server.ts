@@ -6,7 +6,7 @@ import { getClientForAccount, invalidateClient } from './login';
 import { getNextActiveAccount, listAccounts, createAccount, updateAccount, deleteAccount, getAccountById } from './accounts';
 import { connectMongo } from './db';
 import { Reply } from './models/reply';
-import { TwitterOpenApiClient } from 'twitter-openapi-typescript';
+import { TwitterOpenApiClient } from 'twitter-openapi-typescript-v2';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import * as xlsx from 'xlsx';

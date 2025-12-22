@@ -24,6 +24,7 @@
     "mongoose": "^8.18.1",
     "node-fetch": "^3.3.2",
     "twitter-openapi-typescript": "^0.0.55",
+    "twitter-openapi-typescript-v2": "^1.0.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import './polyfills/crypto';
-import { TwitterOpenApiClient } from 'twitter-openapi-typescript';
+import { TwitterOpenApiClient } from 'twitter-openapi-typescript-v2';
 import * as fs from 'fs';
 
 export type FetchRepliesResult = {
@@ -41,7 +41,7 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
   let cursor: string | undefined = undefined;
 
   do {
-    // Random delay 10s to mitigate rate limits/bans
+    // Random delay 5s to mitigate rate limits/bans
     await sleep(5000);
 
     const params: any = {
@@ -56,27 +56,63 @@ export async function fetchReplyUsernamesForUrl(url: string, client: TwitterOpen
       throw new Error(resp?.raw?.response?.statusText || 'Failed to fetch tweet detail');
     }
 
-    // Collect usernames from tweets
-    for (const item of resp.data.data) {
-      const screenName = item.user?.legacy?.screenName;
-      if (screenName) {
-        usernamesSet.add(screenName);
+    // Extract usernames and cursor from instruction
+    const instruction = resp.data?.raw?.instruction;
+    let entriesCount = 0;
+    let nextCursor: string | undefined = undefined;
+
+    if (Array.isArray(instruction)) {
+      for (const inst of instruction) {
+        // Find TimelineAddEntries instruction
+        if (inst.type === 'TimelineAddEntries' && Array.isArray(inst.entries)) {
+          for (const entry of inst.entries) {
+            const content = entry.content as any;
+            
+            // Extract username from tweet entries (TimelineTimelineItem)
+            if (content?.typename === 'TimelineTimelineItem') {
+              const screenName = content?.itemContent?.tweetResults?.result?.core?.userResults?.result?.legacy?.screenName;
+              if (screenName) {
+                usernamesSet.add(screenName);
+                entriesCount++;
+              }
+            }
+            
+            // Extract username from module items (TimelineTimelineModule)
+            if (content?.typename === 'TimelineTimelineModule' && Array.isArray(content?.items)) {
+              for (const moduleItem of content.items) {
+                const item = moduleItem.item as any;
+                const screenName = item?.itemContent?.tweetResults?.result?.core?.userResults?.result?.legacy?.screenName;
+                if (screenName) {
+                  usernamesSet.add(screenName);
+                  entriesCount++;
+                }
+              }
+            }
+            
+            // Extract cursor for pagination (support both Bottom and ShowMoreThreads)
+            if (content?.typename === 'TimelineTimelineCursor') {
+              if (content?.cursorType === 'Bottom' || content?.cursorType === 'ShowMoreThreads') {
+                nextCursor = content?.value;
+              }
+            }
+          }
+        }
       }
     }
 
-    console.log(`${url} - ${resp?.data?.data?.length}`);
+    console.log(`${url} - Page ${page + 1}: ${entriesCount} usernames found, Total unique: ${usernamesSet.size}`);
 
     page += 1;
 
-    if (resp?.data?.data?.length === 0) {
+    // Stop if no entries found or no next cursor
+    if (entriesCount === 0 || !nextCursor) {
       break;
     }
 
-    // Next page cursor
-    const bottomCursor = resp.data.cursor.bottom?.value;
-    cursor = bottomCursor || undefined;
+    cursor = nextCursor;
   } while (cursor);
 
+  console.log(`${url} - Completed: Total ${usernamesSet.size} unique usernames`);
   return { url, usernames: Array.from(usernamesSet) };
 }
 

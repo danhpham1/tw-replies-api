@@ -1,5 +1,5 @@
 import './polyfills/crypto';
-import { TwitterOpenApi, TwitterOpenApiClient } from 'twitter-openapi-typescript';
+import { TwitterOpenApi, TwitterOpenApiClient } from 'twitter-openapi-typescript-v2';
 import * as dotenv from 'dotenv';
 import { Account } from './accounts';
 import { HttpProxyAgent } from 'http-proxy-agent';
